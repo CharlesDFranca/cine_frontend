@@ -1,7 +1,7 @@
-import { RegisterPage } from "./pages/register/RegisterPage";
+import { VerifyEmailPage } from "./pages/verify-email/VerifyEmailPage";
 
 function App() {
-  return <RegisterPage />;
+  return <VerifyEmailPage />;
 }
 
 export default App;
