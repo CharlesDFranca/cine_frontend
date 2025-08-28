@@ -34,7 +34,17 @@ export function RegisterPage() {
     setLoading(true);
 
     try {
-      await api.post<RegisterResponse>("/auth/register", form);
+      const response = await api.post<ApiResponse<RegisterResponse>>(
+        "/auth/register",
+        form
+      );
+
+      if (!response.data.success || !response.data.data) {
+        throw new Error("Algo deu errado.");
+      }
+
+      localStorage.setItem("userId", response.data.data.userId);
+
       navigate("/verify-email");
     } catch (err: unknown) {
       const error = err as AxiosError<ApiResponse<ErrorResponse>>;
