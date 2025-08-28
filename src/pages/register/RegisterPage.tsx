@@ -1,13 +1,56 @@
+import { useState, type FormEvent } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import "./RegisterPageStyle.css";
+import api from "../../api/api";
+import { AxiosError } from "axios";
+import type { ApiResponse, ErrorResponse } from "../../types/api-response";
+
+type RegisterRequest = {
+  name: string;
+  email: string;
+  password: string;
+};
+
+type RegisterResponse = {
+  message: string;
+  userId: string;
+};
 
 export function RegisterPage() {
+  const navigate = useNavigate();
+  const [form, setForm] = useState<RegisterRequest>({
+    name: "",
+    email: "",
+    password: "",
+  });
+  const [loading, setLoading] = useState(false);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      await api.post<RegisterResponse>("/auth/register", form);
+      navigate("/verify-email");
+    } catch (err: unknown) {
+      const error = err as AxiosError<ApiResponse<ErrorResponse>>;
+      console.log({ ...error });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <section className="registration-section">
       <div className="registration-left-side">
         <div className="registration-container">
           <h1 className="registration-logo">CineVerse</h1>
 
-          <form action="" className="registration-form">
+          <form className="registration-form" onSubmit={handleSubmit}>
             <h2 className="registration-form-message">Seja muito bem vindo!</h2>
 
             <div className="registration-group">
@@ -20,6 +63,8 @@ export function RegisterPage() {
                 type="text"
                 id="name"
                 name="name"
+                value={form.name}
+                onChange={handleChange}
                 required
               />
             </div>
@@ -34,6 +79,8 @@ export function RegisterPage() {
                 type="email"
                 id="email"
                 name="email"
+                value={form.email}
+                onChange={handleChange}
                 required
               />
             </div>
@@ -48,16 +95,23 @@ export function RegisterPage() {
                 type="password"
                 id="password"
                 name="password"
+                value={form.password}
+                onChange={handleChange}
                 required
               />
             </div>
 
-            <button className="registration-button" type="submit">
-              Cadastrar
+            <button
+              className="registration-button"
+              type="submit"
+              disabled={loading}
+            >
+              {loading ? "Cadastrando..." : "Cadastrar"}
             </button>
+
             <div className="registration-links">
               <span>
-                Já possui conta? <a href="#">Faça o login.</a>
+                Já possui conta? <Link to="/login">Faça o login.</Link>
               </span>
             </div>
           </form>
