@@ -98,7 +98,7 @@ export function LoginPage() {
               {loading ? "Entrando.." : "Entrar"}
             </button>
             <div className="login-links">
-              <Link to="/reset-password">Esqueceu a senha?</Link>
+              <Link to="/forgot-password">Esqueceu a senha?</Link>
               <span>
                 Não possui conta? <Link to="/register">Faça o cadastro.</Link>
               </span>

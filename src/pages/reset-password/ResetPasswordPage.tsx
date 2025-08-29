@@ -1,22 +1,22 @@
 import { useState, type FormEvent } from "react";
+import { useNavigate } from "react-router-dom";
 import "./ResetPasswordPage.css";
-import type { AxiosError } from "axios";
-import { useNavigate, type ErrorResponse } from "react-router-dom";
 import api from "../../api/api";
-import type { ApiResponse } from "../../types/api-response";
+import { AxiosError } from "axios";
+import type { ApiResponse, ErrorResponse } from "../../types/api-response";
 
 type ResetPasswordRequest = {
-  email: string;
+  code: number;
+  newPassword: string;
 };
 
-type ResetPasswordResponse = {
-  message: string;
-};
+type ResetPasswordResponse = { message: string };
 
 export function ResetPasswordPage() {
   const navigate = useNavigate();
   const [form, setForm] = useState<ResetPasswordRequest>({
-    email: "",
+    code: 0,
+    newPassword: "",
   });
   const [loading, setLoading] = useState(false);
 
@@ -29,14 +29,20 @@ export function ResetPasswordPage() {
     setLoading(true);
 
     try {
-      const response = await api.post<ApiResponse<ResetPasswordResponse>>(
-        "/auth/request-password-reset",
+      const resetPasswordToken = localStorage.getItem("resetPasswordToken");
+
+      if (!resetPasswordToken) {
+        throw new Error("Token não provido.");
+      }
+
+      await api.post<ApiResponse<ResetPasswordResponse>>(
+        `/auth/change-password-by-email?resetToken=${resetPasswordToken}`,
         form
       );
 
-      alert(response.data.data?.message);
+      localStorage.removeItem("resetPasswordToken");
 
-      navigate("/change-password");
+      navigate("/login");
     } catch (err: unknown) {
       const error = err as AxiosError<ApiResponse<ErrorResponse>>;
       console.log({ ...error });
@@ -53,20 +59,36 @@ export function ResetPasswordPage() {
 
           <form className="reset-password-form" onSubmit={handleSubmit}>
             <h2 className="reset-password-form-message">
-              Por favor, digite seu e-mail.
+              Insira o código enviado por email.
             </h2>
 
             <div className="reset-password-group">
               <label className="reset-password-label" htmlFor="code">
-                Email:
+                Código:
               </label>
               <input
                 className="reset-password-input"
-                placeholder="Digite o seu email"
-                type="email"
-                id="email"
-                name="email"
-                value={form.email}
+                placeholder="Digite seu nome"
+                type="text"
+                id="code"
+                name="code"
+                value={form.code}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <div className="reset-password-group">
+              <label className="reset-password-label" htmlFor="password">
+                Nova senha:
+              </label>
+              <input
+                className="reset-password-input"
+                placeholder="Digite sua nova senha"
+                type="password"
+                id="password"
+                name="newPassword"
+                value={form.newPassword}
                 onChange={handleChange}
                 required
               />
@@ -77,7 +99,7 @@ export function ResetPasswordPage() {
               type="submit"
               disabled={loading}
             >
-              {loading ? "Verificando.." : "Verificar"}
+              {loading ? "Mudando senha..." : "Mudar senha"}
             </button>
           </form>
         </div>
