@@ -1,42 +1,68 @@
-import { useState, type FormEvent } from "react";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./RegisterPageStyle.css";
 import api from "../../api/api";
 import { AxiosError } from "axios";
 import type { ApiResponse, ErrorResponse } from "../../types/api-response";
+import { zodResolver } from "@hookform/resolvers/zod";
 
-type RegisterRequest = {
-  name: string;
-  email: string;
-  password: string;
-};
+const registerRequestSchema = z.object({
+  name: z.string().min(2, "O nome deve ter no mínimo 2 caracteres."),
+  email: z.email("Por favor, digite um email válido."),
+  password: z
+    .string()
+    .min(8, "A senha deve ter no mínimo 8 caracteres.")
+    .max(128, "A senha deve ter no máximo 128 caracteres.")
+    .refine((password) => /[a-z]/.test(password), {
+      message: "A senha deve ter pelo menos uma letra minúscula.",
+    })
+    .refine((password) => /[A-Z]/.test(password), {
+      message: "A senha deve ter pelo menos uma letra maiúscula.",
+    })
+    .refine((password) => /\d/.test(password), {
+      message: "A senha deve ter pelo menos um número.",
+    })
+    .refine((password) => /[^a-zA-Z0-9]/.test(password), {
+      message: "A senha deve ter pelo menos um caractere especial.",
+    }),
+});
 
+type RegisterRequest = z.infer<typeof registerRequestSchema>;
 type RegisterResponse = {
-  message: string;
   userId: string;
+  message: string;
 };
 
 export function RegisterPage() {
-  const navigate = useNavigate();
-  const [form, setForm] = useState<RegisterRequest>({
-    name: "",
-    email: "",
-    password: "",
+  const {
+    handleSubmit,
+    register,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(registerRequestSchema),
+    mode: "all",
+    criteriaMode: "all",
+    defaultValues: {
+      email: "",
+      name: "",
+      password: "",
+    },
   });
+
+  const navigate = useNavigate();
+
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
+  const handleSubmitForm = async (data: RegisterRequest) => {
     setLoading(true);
 
     try {
       const response = await api.post<ApiResponse<RegisterResponse>>(
         "/auth/register",
-        form
+        data
       );
 
       if (!response.data.success || !response.data.data) {
@@ -60,7 +86,10 @@ export function RegisterPage() {
         <div className="registration-container">
           <h1 className="registration-logo">CineVerse</h1>
 
-          <form className="registration-form" onSubmit={handleSubmit}>
+          <form
+            className="registration-form"
+            onSubmit={handleSubmit(handleSubmitForm)}
+          >
             <h2 className="registration-form-message">Seja muito bem vindo!</h2>
 
             <div className="registration-group">
@@ -72,11 +101,10 @@ export function RegisterPage() {
                 placeholder="Digite seu nome"
                 type="text"
                 id="name"
-                name="name"
-                value={form.name}
-                onChange={handleChange}
+                {...register("name")}
                 required
               />
+              {errors.name && <span>{errors.name.message}</span>}
             </div>
 
             <div className="registration-group">
@@ -88,11 +116,10 @@ export function RegisterPage() {
                 placeholder="Digite seu email"
                 type="email"
                 id="email"
-                name="email"
-                value={form.email}
-                onChange={handleChange}
+                {...register("email")}
                 required
               />
+              {errors.email && <span>{errors.email.message}</span>}
             </div>
 
             <div className="registration-group">
@@ -104,11 +131,10 @@ export function RegisterPage() {
                 placeholder="Digite sua senha"
                 type="password"
                 id="password"
-                name="password"
-                value={form.password}
-                onChange={handleChange}
+                {...register("password")}
                 required
               />
+              {errors.password && <span>{errors.password.message}</span>}
             </div>
 
             <button

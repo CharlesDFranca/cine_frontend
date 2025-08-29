@@ -44,7 +44,14 @@
 .registration-group {
   display: flex;
   flex-direction: column;
-  margin-bottom: 20px;
+  margin-bottom: 30px;
+  min-height: 120px;
+  max-height: 120px;
+  border: 1px solid black;
+}
+
+.registration-group span {
+  color: rgb(185, 0, 0);
 }
 
 .registration-button,
