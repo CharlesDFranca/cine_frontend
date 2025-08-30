@@ -1,0 +1,38 @@
+.auth-section {
+  display: flex;
+  overflow: hidden;
+  height: 100vh;
+  color: var(--blue-900);
+}
+
+.auth-logo {
+  font-size: var(--font-5);
+  letter-spacing: 0.5rem;
+  font-weight: 900;
+}
+
+.auth-left-side {
+  min-width: 35%;
+  height: 100%;
+  background-color: var(--brand-yellow);
+}
+
+.auth-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+.auth-links {
+  display: flex;
+  align-items: center;
+  justify-content: end;
+  flex-direction: column;
+  height: 50px;
+}
+
+.auth-image {
+  width: 65%;
+}

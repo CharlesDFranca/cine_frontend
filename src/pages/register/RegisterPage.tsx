@@ -1,46 +1,61 @@
-import { useState, type FormEvent } from "react";
-import { Link, useNavigate } from "react-router-dom";
 import "./RegisterPageStyle.css";
 import api from "../../api/api";
+
+import {
+  AuthButton,
+  AuthForm,
+  AuthInput,
+  AuthSection,
+} from "../../components/auth";
+
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 import { AxiosError } from "axios";
 import type { ApiResponse, ErrorResponse } from "../../types/api-response";
+import { zodResolver } from "@hookform/resolvers/zod";
 
-type RegisterRequest = {
-  name: string;
-  email: string;
-  password: string;
-};
+import { registerRequestSchema } from "./schemas/registerSchema";
 
+type RegisterRequest = z.infer<typeof registerRequestSchema>;
 type RegisterResponse = {
-  message: string;
   userId: string;
+  message: string;
 };
 
 export function RegisterPage() {
-  const navigate = useNavigate();
-  const [form, setForm] = useState<RegisterRequest>({
-    name: "",
-    email: "",
-    password: "",
+  const {
+    handleSubmit,
+    register,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(registerRequestSchema),
+    mode: "all",
+    criteriaMode: "all",
+    defaultValues: {
+      email: "",
+      name: "",
+      password: "",
+    },
   });
+
+  const navigate = useNavigate();
+
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
+  const handleSubmitForm = async (data: RegisterRequest) => {
     setLoading(true);
 
     try {
       const response = await api.post<ApiResponse<RegisterResponse>>(
         "/auth/register",
-        form
+        data
       );
 
       if (!response.data.success || !response.data.data) {
-        throw new Error("Algo deu errado.");
+        alert("Algo deu errado. Por favor, tente novamente.");
+        return;
       }
 
       localStorage.setItem("userId", response.data.data.userId);
@@ -55,83 +70,53 @@ export function RegisterPage() {
   };
 
   return (
-    <section className="registration-section">
-      <div className="registration-left-side">
-        <div className="registration-container">
-          <h1 className="registration-logo">CineVerse</h1>
+    <AuthSection>
+      <AuthForm
+        message="Seja muito bem vindo!"
+        onSubmit={handleSubmit(handleSubmitForm)}
+      >
+        <AuthInput
+          label="Name:"
+          type="string"
+          inputId="register-name"
+          placeholder="Digite seu nome"
+          {...register("name")}
+        >
+          {errors.name && <span>{errors.name.message}</span>}
+        </AuthInput>
 
-          <form className="registration-form" onSubmit={handleSubmit}>
-            <h2 className="registration-form-message">Seja muito bem vindo!</h2>
+        <AuthInput
+          label="E-mail:"
+          type="email"
+          inputId="register-email"
+          placeholder="Digite seu email"
+          {...register("email")}
+        >
+          {errors.email && <span>{errors.email.message}</span>}
+        </AuthInput>
 
-            <div className="registration-group">
-              <label className="registration-label" htmlFor="name">
-                Nome:
-              </label>
-              <input
-                className="registration-input"
-                placeholder="Digite seu nome"
-                type="text"
-                id="name"
-                name="name"
-                value={form.name}
-                onChange={handleChange}
-                required
-              />
-            </div>
+        <AuthInput
+          label="Senha:"
+          type="password"
+          inputId="register-password"
+          placeholder="Digite sua senha"
+          {...register("password")}
+        >
+          {errors.password && <span>{errors.password.message}</span>}
+        </AuthInput>
 
-            <div className="registration-group">
-              <label className="registration-label" htmlFor="email">
-                E-mail:
-              </label>
-              <input
-                className="registration-input"
-                placeholder="Digite seu email"
-                type="email"
-                id="email"
-                name="email"
-                value={form.email}
-                onChange={handleChange}
-                required
-              />
-            </div>
+        <AuthButton
+          loading={loading}
+          loadindMessage="Cadastrando..."
+          buttonMessage="Cadastrar"
+        />
 
-            <div className="registration-group">
-              <label className="registration-label" htmlFor="password">
-                Senha:
-              </label>
-              <input
-                className="registration-input"
-                placeholder="Digite sua senha"
-                type="password"
-                id="password"
-                name="password"
-                value={form.password}
-                onChange={handleChange}
-                required
-              />
-            </div>
-
-            <button
-              className="registration-button"
-              type="submit"
-              disabled={loading}
-            >
-              {loading ? "Cadastrando..." : "Cadastrar"}
-            </button>
-
-            <div className="registration-links">
-              <span>
-                Já possui conta? <Link to="/login">Faça o login.</Link>
-              </span>
-            </div>
-          </form>
+        <div className="registration-links">
+          <span>
+            Já possui conta? <Link to="/login">Faça o login.</Link>
+          </span>
         </div>
-      </div>
-      <img
-        src="src/assets/pessoas_sentadas_assistindo.png"
-        className="registration-image"
-        alt="Cinco pessoas sentadas assistindo a uma tela amarela ao céu aberto, o fundo é azul e há lâmpadas amarelas"
-      />
-    </section>
+      </AuthForm>
+    </AuthSection>
   );
 }
