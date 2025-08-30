@@ -10,11 +10,15 @@
   justify-content: center;
   text-align: center;
   cursor: pointer;
-  transition: 1s;
+  transition: 0.3s;
+
+  margin-top: 1rem;
 }
 
 .auth-button:hover {
-  background-color: var(--white);
-  border: 2px solid var(--blue-600);
-  color: var(--blue-600);
+  background-color: var(--blue-700);
+}
+
+.auth-button:disabled {
+  background-color: var(--blue-700);
 }
