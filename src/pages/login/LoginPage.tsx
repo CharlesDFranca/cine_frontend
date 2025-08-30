@@ -1,14 +1,21 @@
 import type { AxiosError } from "axios";
-import { useState, type FormEvent } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../../api/api";
 import type { ApiResponse, ErrorResponse } from "../../types/api-response";
 import "./LoginPage.css";
+import {
+  AuthButton,
+  AuthForm,
+  AuthInput,
+  AuthSection,
+} from "../../components/auth";
+import z from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { loginRequestSchema } from "./schemas/loginSchemas";
 
-type LoginRequest = {
-  email: string;
-  password: string;
-};
+type LoginRequest = z.infer<typeof loginRequestSchema>;
 
 type LoginResponse = {
   accessToken: string;
@@ -16,29 +23,38 @@ type LoginResponse = {
 };
 
 export function LoginPage() {
-  const navigate = useNavigate();
-  const [form, setForm] = useState<LoginRequest>({
-    email: "",
-    password: "",
+  const {
+    handleSubmit,
+    register,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(loginRequestSchema),
+    mode: "all",
+    criteriaMode: "all",
+    defaultValues: {
+      email: "",
+      password: "",
+    },
   });
+
+  const navigate = useNavigate();
+
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
+  const handleSubmitForm = async (data: LoginRequest) => {
     setLoading(true);
 
     try {
       const response = await api.post<ApiResponse<LoginResponse>>(
         "/auth/login",
-        form
+        data
       );
 
       if (!response.data.success || !response.data.data) {
-        throw new Error("Algo deu errado");
+        alert(
+          "Algo deu errado. Por favor, tente novamente em alguns instantes."
+        );
+        return;
       }
 
       localStorage.setItem("accessToken", response.data.data.accessToken);
@@ -54,63 +70,43 @@ export function LoginPage() {
   };
 
   return (
-    <section className="login-section">
-      <div className="login-left-side">
-        <div className="login-container">
-          <h1 className="login-logo">CineVerse</h1>
+    <AuthSection>
+      <AuthForm
+        onSubmit={handleSubmit(handleSubmitForm)}
+        message="Bem vindo de volta!"
+      >
+        <AuthInput
+          label="E-mail"
+          type="email"
+          inputId="email"
+          placeholder="Digite seu email"
+          {...register("email")}
+        >
+          {errors.email && <span>{errors.email.message}</span>}
+        </AuthInput>
+        <AuthInput
+          label="Senha"
+          type="password"
+          inputId="password"
+          placeholder="Digite sua senha"
+          {...register("password")}
+        >
+          {errors.password && <span>{errors.password.message}</span>}
+        </AuthInput>
 
-          <form className="login-form" onSubmit={handleSubmit}>
-            <h2 className="login-form-message">Bem vindo de volta!</h2>
+        <AuthButton
+          buttonMessage="Entrar"
+          loadindMessage="Entrando..."
+          loading={loading}
+        />
 
-            <div className="login-group">
-              <label className="login-label" htmlFor="email">
-                E-mail:
-              </label>
-              <input
-                className="login-input"
-                placeholder="Digite seu email"
-                type="email"
-                id="email"
-                name="email"
-                value={form.email}
-                onChange={handleChange}
-                required
-              />
-            </div>
-
-            <div className="login-group">
-              <label className="login-label" htmlFor="password">
-                Senha:
-              </label>
-              <input
-                className="login-input"
-                placeholder="Digite sua senha"
-                type="password"
-                id="password"
-                name="password"
-                value={form.password}
-                onChange={handleChange}
-                required
-              />
-            </div>
-
-            <button className="login-button" type="submit" disabled={loading}>
-              {loading ? "Entrando.." : "Entrar"}
-            </button>
-            <div className="login-links">
-              <Link to="/forgot-password">Esqueceu a senha?</Link>
-              <span>
-                Não possui conta? <Link to="/register">Faça o cadastro.</Link>
-              </span>
-            </div>
-          </form>
+        <div className="login-links">
+          <Link to="/forgot-password">Esqueceu a senha?</Link>
+          <span>
+            Não possui conta? <Link to="/register">Faça o cadastro.</Link>
+          </span>
         </div>
-      </div>
-      <img
-        src="src/assets/pessoas_sentadas_assistindo.png"
-        className="login-image"
-        alt="Cinco pessoas sentadas assistindo a uma tela amarela ao céu aberto, o fundo é azul e há lâmpadas amarelas"
-      />
-    </section>
+      </AuthForm>
+    </AuthSection>
   );
 }
