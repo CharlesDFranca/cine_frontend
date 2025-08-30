@@ -16,7 +16,7 @@ import { AxiosError } from "axios";
 import type { ApiResponse, ErrorResponse } from "../../types/api-response";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { registerRequestSchema } from "./schemas/registerSchema";
+import { registerRequestSchema } from "./schemas/registerSchemas";
 
 type RegisterRequest = z.infer<typeof registerRequestSchema>;
 type RegisterResponse = {
