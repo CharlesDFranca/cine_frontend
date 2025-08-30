@@ -1,0 +1,27 @@
+.auth-group {
+  display: flex;
+  flex-direction: column;
+  min-height: 120px;
+}
+
+.auth-group span {
+  color: rgb(185, 0, 0);
+}
+
+.auth-input {
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem;
+  height: 75px;
+  border: none;
+  outline: none;
+  background-color: var(--gray);
+  font-size: var(--font-2);
+  border-radius: var(--radius-2);
+}
+
+.auth-label {
+  font-weight: 500;
+  cursor: pointer;
+  font-size: calc(var(--font-2) - 4px);
+}
