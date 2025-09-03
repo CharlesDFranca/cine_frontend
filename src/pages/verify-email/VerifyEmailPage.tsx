@@ -32,6 +32,7 @@ export function VerifyEmailPage() {
     mode: "all",
     criteriaMode: "all",
     defaultValues: {
+      validateEmailToken: "",
       code: "",
     },
   });
@@ -44,18 +45,18 @@ export function VerifyEmailPage() {
     setLoading(true);
 
     try {
-      const userId = localStorage.getItem("userId");
+      const validateEmailToken = localStorage.getItem("validateEmailToken");
 
-      if (!userId) throw new Error("Usuário não registrado.");
+      if (!validateEmailToken) throw new Error("Usuário não registrado.");
 
-      data.userId = userId;
+      data.validateEmailToken = validateEmailToken;
 
       await api.post<ApiResponse<VerifyEmailResponse>>(
-        "/auth/validate-email",
+        `/auth/validate-email?token=${validateEmailToken}`,
         data
       );
 
-      localStorage.removeItem("userId");
+      localStorage.removeItem("validateEmailToken");
 
       navigate("/login");
     } catch (err: unknown) {
@@ -85,7 +86,7 @@ export function VerifyEmailPage() {
         <AuthButton
           loading={loading}
           buttonMessage="Verificar"
-          loadindMessage="Verificando..."
+          loadingMessage="Verificando..."
         />
       </AuthForm>
     </AuthSection>

@@ -1,11 +1,11 @@
 import "./AuthForm.css";
 
-import type { ReactNode } from "react";
+import type { FormEventHandler, ReactNode } from "react";
 
 type AuthFormProps = {
   children: ReactNode;
   message: string;
-  onSubmit: () => Promise<void>;
+  onSubmit: FormEventHandler<HTMLFormElement>;
 };
 
 export function AuthForm({ children, message, onSubmit }: AuthFormProps) {

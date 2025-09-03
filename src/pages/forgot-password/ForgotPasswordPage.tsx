@@ -84,7 +84,7 @@ export function ForgotPasswordPage() {
 
         <AuthButton
           buttonMessage="Enviar"
-          loadindMessage="Enviando..."
+          loadingMessage="Enviando..."
           loading={loading}
         />
       </AuthForm>

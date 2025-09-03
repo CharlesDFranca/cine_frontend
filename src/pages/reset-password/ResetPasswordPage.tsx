@@ -92,7 +92,7 @@ export function ResetPasswordPage() {
 
         <AuthButton
           buttonMessage="Mudar senha"
-          loadindMessage="Verificando..."
+          loadingMessage="Verificando..."
           loading={loading}
         />
       </AuthForm>
