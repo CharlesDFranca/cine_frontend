@@ -1,37 +1,51 @@
-import { useState, type FormEvent } from "react";
+import { useState } from "react";
 import "./ForgotPasswordPage.css";
 import type { AxiosError } from "axios";
 import { useNavigate, type ErrorResponse } from "react-router-dom";
 import api from "../../api/api";
 import type { ApiResponse } from "../../types/api-response";
+import z from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import {
+  AuthButton,
+  AuthForm,
+  AuthInput,
+  AuthSection,
+} from "../../components/auth";
+import { forgotPasswordRequest } from "./schemas/forgotPasswordSchema";
 
-type ForgotPasswordRequest = {
-  email: string;
-};
+type ForgotPasswordRequest = z.infer<typeof forgotPasswordRequest>;
 
 type ForgotPasswordResponse = {
   resetPasswordToken: string;
 };
 
 export function ForgotPasswordPage() {
-  const navigate = useNavigate();
-  const [form, setForm] = useState<ForgotPasswordRequest>({
-    email: "",
+  const {
+    handleSubmit,
+    register,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(forgotPasswordRequest),
+    mode: "all",
+    criteriaMode: "all",
+    defaultValues: {
+      email: "",
+    },
   });
+
+  const navigate = useNavigate();
+
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
+  const handleSubmitForm = async (data: ForgotPasswordRequest) => {
     setLoading(true);
 
     try {
       const response = await api.post<ApiResponse<ForgotPasswordResponse>>(
         "/auth/request-password-reset",
-        form
+        data
       );
 
       if (!response.data.success || !response.data.data) {
@@ -53,47 +67,27 @@ export function ForgotPasswordPage() {
   };
 
   return (
-    <section className="forgot-password-section">
-      <div className="forgot-password-left-side">
-        <div className="forgot-password-container">
-          <h1 className="forgot-password-logo">CineVerse</h1>
+    <AuthSection>
+      <AuthForm
+        message="Por favor, digite seu e-mail."
+        onSubmit={handleSubmit(handleSubmitForm)}
+      >
+        <AuthInput
+          type="email"
+          inputId="email"
+          label="E-mail"
+          placeholder="Digite seu email"
+          {...register("email")}
+        >
+          {errors.email && errors.email.message}
+        </AuthInput>
 
-          <form className="forgot-password-form" onSubmit={handleSubmit}>
-            <h2 className="forgot-password-form-message">
-              Por favor, digite seu e-mail.
-            </h2>
-
-            <div className="forgot-password-group">
-              <label className="forgot-password-label" htmlFor="code">
-                Email:
-              </label>
-              <input
-                className="forgot-password-input"
-                placeholder="Digite o seu email"
-                type="email"
-                id="email"
-                name="email"
-                value={form.email}
-                onChange={handleChange}
-                required
-              />
-            </div>
-
-            <button
-              className="forgot-password-button"
-              type="submit"
-              disabled={loading}
-            >
-              {loading ? "Verificando.." : "Verificar"}
-            </button>
-          </form>
-        </div>
-      </div>
-      <img
-        src="src/assets/pessoas_sentadas_assistindo.png"
-        className="forgot-password-image"
-        alt="Cinco pessoas sentadas assistindo a uma tela amarela ao céu aberto, o fundo é azul e há lâmpadas amarelas"
-      />
-    </section>
+        <AuthButton
+          buttonMessage="Enviar"
+          loadindMessage="Enviando..."
+          loading={loading}
+        />
+      </AuthForm>
+    </AuthSection>
   );
 }
