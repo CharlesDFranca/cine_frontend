@@ -20,8 +20,7 @@ import { registerRequestSchema } from "./schemas/registerSchemas";
 
 type RegisterRequest = z.infer<typeof registerRequestSchema>;
 type RegisterResponse = {
-  userId: string;
-  message: string;
+  validateEmailToken: string;
 };
 
 export function RegisterPage() {
@@ -55,10 +54,14 @@ export function RegisterPage() {
 
       if (!response.data.success || !response.data.data) {
         alert("Algo deu errado. Por favor, tente novamente.");
+
         return;
       }
 
-      localStorage.setItem("userId", response.data.data.userId);
+      localStorage.setItem(
+        "validateEmailToken",
+        response.data.data.validateEmailToken
+      );
 
       navigate("/verify-email");
     } catch (err: unknown) {
@@ -107,7 +110,7 @@ export function RegisterPage() {
 
         <AuthButton
           loading={loading}
-          loadindMessage="Cadastrando..."
+          loadingMessage="Cadastrando..."
           buttonMessage="Cadastrar"
         />
 

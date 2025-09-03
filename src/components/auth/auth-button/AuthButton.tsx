@@ -2,18 +2,18 @@ import "./AuthButton.css";
 
 type AuthButton = {
   loading: boolean;
-  loadindMessage: string;
+  loadingMessage: string;
   buttonMessage: string;
 };
 
 export function AuthButton({
   loading,
-  loadindMessage,
+  loadingMessage,
   buttonMessage,
 }: AuthButton) {
   return (
     <button className="auth-button" type="submit" disabled={loading}>
-      {loading ? loadindMessage : buttonMessage}
+      {loading ? loadingMessage : buttonMessage}
     </button>
   );
 }

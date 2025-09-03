@@ -96,7 +96,7 @@ export function LoginPage() {
 
         <AuthButton
           buttonMessage="Entrar"
-          loadindMessage="Entrando..."
+          loadingMessage="Entrando..."
           loading={loading}
         />
 
